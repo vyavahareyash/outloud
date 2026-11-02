@@ -7,9 +7,12 @@
     "build": "node build.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "lint": "biome check src tests",
+    "format": "biome format --write src tests"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.6.4",
     "@types/chrome": "^0.0.308",
     "@types/node": "^22.0.0",
     "esbuild": "^0.25.0",

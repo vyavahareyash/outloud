@@ -1,31 +1,31 @@
-import type { PlaybackState } from '../common/types.js';
-import { interceptPointerDown } from './selection-handler.js';
+import type { PlaybackState } from "../common/types.js";
+import { interceptPointerDown } from "./selection-handler.js";
 
 export class FloatingPill {
-  private host: HTMLElement;
-  private shadow: ShadowRoot;
-  private playBtn: HTMLButtonElement;
-  private voiceBadge: HTMLElement;
-  private statusText: HTMLElement;
-  private onPlayCallback: (() => void) | null = null;
-  private onStopCallback: (() => void) | null = null;
-  private currentState: PlaybackState = 'IDLE';
+	private host: HTMLElement;
+	private shadow: ShadowRoot;
+	private playBtn: HTMLButtonElement;
+	private voiceBadge: HTMLElement;
+	private statusText: HTMLElement;
+	private onPlayCallback: (() => void) | null = null;
+	private onStopCallback: (() => void) | null = null;
+	private currentState: PlaybackState = "IDLE";
 
-  constructor() {
-    this.host = document.createElement('div');
-    this.host.id = 'outloud-selection-pill-root';
-    this.host.style.position = 'absolute';
-    this.host.style.zIndex = '2147483647';
-    this.host.style.display = 'none';
+	constructor() {
+		this.host = document.createElement("div");
+		this.host.id = "outloud-selection-pill-root";
+		this.host.style.position = "absolute";
+		this.host.style.zIndex = "2147483647";
+		this.host.style.display = "none";
 
-    this.shadow = this.host.attachShadow({ mode: 'closed' });
+		this.shadow = this.host.attachShadow({ mode: "closed" });
 
-    // Intercept pointer down to preserve page selection range
-    this.host.addEventListener('mousedown', interceptPointerDown);
-    this.host.addEventListener('pointerdown', interceptPointerDown);
+		// Intercept pointer down to preserve page selection range
+		this.host.addEventListener("mousedown", interceptPointerDown);
+		this.host.addEventListener("pointerdown", interceptPointerDown);
 
-    const style = document.createElement('style');
-    style.textContent = `
+		const style = document.createElement("style");
+		style.textContent = `
       .pill-container {
         display: flex;
         align-items: center;
@@ -81,99 +81,102 @@ export class FloatingPill {
       }
     `;
 
-    const container = document.createElement('div');
-    container.className = 'pill-container';
+		const container = document.createElement("div");
+		container.className = "pill-container";
 
-    this.playBtn = document.createElement('button');
-    this.playBtn.className = 'btn';
-    this.playBtn.textContent = '▶ Read';
+		this.playBtn = document.createElement("button");
+		this.playBtn.className = "btn";
+		this.playBtn.textContent = "▶ Read";
 
-    this.playBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (this.currentState === 'PLAYING' || this.currentState === 'BUFFERING') {
-        this.onStopCallback?.();
-      } else {
-        this.onPlayCallback?.();
-      }
-    });
+		this.playBtn.addEventListener("click", (e) => {
+			e.stopPropagation();
+			if (
+				this.currentState === "PLAYING" ||
+				this.currentState === "BUFFERING"
+			) {
+				this.onStopCallback?.();
+			} else {
+				this.onPlayCallback?.();
+			}
+		});
 
-    this.voiceBadge = document.createElement('span');
-    this.voiceBadge.className = 'badge';
-    this.voiceBadge.textContent = 'default';
+		this.voiceBadge = document.createElement("span");
+		this.voiceBadge.className = "badge";
+		this.voiceBadge.textContent = "default";
 
-    this.statusText = document.createElement('span');
-    this.statusText.className = 'error-tip';
+		this.statusText = document.createElement("span");
+		this.statusText.className = "error-tip";
 
-    container.appendChild(this.playBtn);
-    container.appendChild(this.voiceBadge);
-    container.appendChild(this.statusText);
+		container.appendChild(this.playBtn);
+		container.appendChild(this.voiceBadge);
+		container.appendChild(this.statusText);
 
-    this.shadow.appendChild(style);
-    this.shadow.appendChild(container);
+		this.shadow.appendChild(style);
+		this.shadow.appendChild(container);
 
-    document.body.appendChild(this.host);
-  }
+		document.body.appendChild(this.host);
+	}
 
-  onPlay(cb: () => void): void {
-    this.onPlayCallback = cb;
-  }
+	onPlay(cb: () => void): void {
+		this.onPlayCallback = cb;
+	}
 
-  onStop(cb: () => void): void {
-    this.onStopCallback = cb;
-  }
+	onStop(cb: () => void): void {
+		this.onStopCallback = cb;
+	}
 
-  show(rect: DOMRect, voice = 'default'): void {
-    this.voiceBadge.textContent = voice;
-    this.statusText.textContent = '';
+	show(rect: DOMRect, voice = "default"): void {
+		this.voiceBadge.textContent = voice;
+		this.statusText.textContent = "";
 
-    const scrollX = window.scrollX || document.documentElement.scrollLeft;
-    const scrollY = window.scrollY || document.documentElement.scrollTop;
+		const scrollX = window.scrollX || document.documentElement.scrollLeft;
+		const scrollY = window.scrollY || document.documentElement.scrollTop;
 
-    const pillHeight = 36;
-    let top = rect.top + scrollY - pillHeight - 8;
-    if (rect.top - pillHeight - 8 < 0) {
-      // Flip below selection if above viewport
-      top = rect.bottom + scrollY + 8;
-    }
+		const pillHeight = 36;
+		let top = rect.top + scrollY - pillHeight - 8;
+		if (rect.top - pillHeight - 8 < 0) {
+			// Flip below selection if above viewport
+			top = rect.bottom + scrollY + 8;
+		}
 
-    const left = Math.max(8, rect.left + scrollX);
+		const left = Math.max(8, rect.left + scrollX);
 
-    this.host.style.top = `${top}px`;
-    this.host.style.left = `${left}px`;
-    this.host.style.display = 'block';
-  }
+		this.host.style.top = `${top}px`;
+		this.host.style.left = `${left}px`;
+		this.host.style.display = "block";
+	}
 
-  hide(): void {
-    if (this.currentState === 'IDLE' || this.currentState === 'ERROR') {
-      this.host.style.display = 'none';
-      this.statusText.textContent = '';
-    }
-  }
+	hide(): void {
+		if (this.currentState === "IDLE" || this.currentState === "ERROR") {
+			this.host.style.display = "none";
+			this.statusText.textContent = "";
+		}
+	}
 
-  setState(state: PlaybackState, errorMessage?: string): void {
-    this.currentState = state;
+	setState(state: PlaybackState, errorMessage?: string): void {
+		this.currentState = state;
 
-    if (state === 'BUFFERING') {
-      this.playBtn.className = 'btn stop';
-      this.playBtn.textContent = '⏳ Buffering...';
-      this.statusText.textContent = '';
-    } else if (state === 'PLAYING') {
-      this.playBtn.className = 'btn stop';
-      this.playBtn.textContent = '■ Stop';
-      this.statusText.textContent = '';
-    } else if (state === 'ERROR') {
-      this.playBtn.className = 'btn';
-      this.playBtn.textContent = '▶ Read';
-      this.statusText.textContent = errorMessage || 'Failed';
-      this.statusText.title = errorMessage || 'Failed';
-    } else {
-      this.playBtn.className = 'btn';
-      this.playBtn.textContent = '▶ Read';
-      this.statusText.textContent = '';
-    }
-  }
+		if (state === "BUFFERING") {
+			this.playBtn.className = "btn stop";
+			this.playBtn.textContent = "⏳ Buffering...";
+			this.statusText.textContent = "";
+		} else if (state === "PLAYING") {
+			this.playBtn.className = "btn stop";
+			this.playBtn.textContent = "■ Stop";
+			this.statusText.textContent = "";
+		} else if (state === "ERROR") {
+			this.playBtn.className = "btn";
+			this.playBtn.textContent = "▶ Read";
+			this.statusText.textContent = errorMessage || "Failed";
+			this.statusText.title = errorMessage || "Failed";
+		} else {
+			this.playBtn.className = "btn";
+			this.playBtn.textContent = "▶ Read";
+			this.statusText.textContent = "";
+		}
+	}
 
-  destroy(): void {
-    this.host.remove();
-  }
+	destroy(): void {
+		this.host.remove();
+	}
 }
