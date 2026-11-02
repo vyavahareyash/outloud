@@ -55,7 +55,7 @@ export class AudioPlayer {
 	}
 
 	async play(text: string, voice = "default"): Promise<void> {
-		this.cancel();
+		this.stopActivePlayback();
 
 		const sentences = tokenizeSentences(text);
 		if (sentences.length === 0) {
@@ -118,9 +118,11 @@ export class AudioPlayer {
 		const body: OllamaSpeechRequest = {
 			model: this.config.modelName,
 			input: sentence,
-			voice,
-			response_format: "mp3",
+			response_format: "wav",
 		};
+		if (voice && voice !== "default") {
+			body.voice = voice;
+		}
 
 		const response = await fetch(`${this.config.ollamaHost}/v1/audio/speech`, {
 			method: "POST",
@@ -134,10 +136,20 @@ export class AudioPlayer {
 			let detail = rawText.trim();
 			try {
 				const parsed = JSON.parse(rawText) as {
-					error?: string;
+					error?: string | { message?: string };
 					message?: string;
 				};
-				detail = parsed.error || parsed.message || detail;
+				if (typeof parsed.error === "string") {
+					detail = parsed.error;
+				} else if (
+					parsed.error &&
+					typeof parsed.error === "object" &&
+					parsed.error.message
+				) {
+					detail = parsed.error.message;
+				} else if (parsed.message) {
+					detail = parsed.message;
+				}
 			} catch {
 				// Non-JSON response, retain raw text
 			}
@@ -175,7 +187,7 @@ export class AudioPlayer {
 		};
 	}
 
-	cancel(): void {
+	private stopActivePlayback(): void {
 		if (this.abortController) {
 			this.abortController.abort();
 			this.abortController = null;
@@ -191,6 +203,10 @@ export class AudioPlayer {
 		}
 		this.activeSources.clear();
 		this.nextScheduledTime = 0;
+	}
+
+	cancel(): void {
+		this.stopActivePlayback();
 		this.updateState("IDLE");
 	}
 }

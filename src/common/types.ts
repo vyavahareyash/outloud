@@ -2,7 +2,7 @@ export interface OllamaSpeechRequest {
 	model: string;
 	input: string;
 	voice?: string;
-	response_format?: "mp3" | "wav";
+	response_format?: "wav" | "pcm";
 }
 
 export type PlaybackState = "IDLE" | "BUFFERING" | "PLAYING" | "ERROR";

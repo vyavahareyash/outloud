@@ -92,4 +92,27 @@ describe("AudioPlayer", () => {
 		expect(player.getState()).toBe("ERROR");
 		expect(capturedError).toBe("HTTP 404 - model 'phonon' not found");
 	});
+
+	it("extracts message when error payload is a nested object", async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: false,
+			status: 400,
+			text: async () =>
+				JSON.stringify({
+					error: { message: "unsupported format" },
+				}),
+		});
+		let capturedError: string | undefined;
+
+		player.onStatusChange((status) => {
+			if (status.state === "ERROR") {
+				capturedError = status.errorMessage;
+			}
+		});
+
+		await player.play("Test sentence.", "default");
+
+		expect(player.getState()).toBe("ERROR");
+		expect(capturedError).toBe("HTTP 400 - unsupported format");
+	});
 });

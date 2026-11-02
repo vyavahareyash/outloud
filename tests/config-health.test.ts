@@ -38,6 +38,23 @@ describe("config & health check", () => {
 		expect(config).toEqual(DEFAULT_CONFIG);
 	});
 
+	it("returns default config when chrome.storage.sync throws", async () => {
+		(globalThis as unknown as { chrome: unknown }).chrome = {
+			storage: {
+				sync: {
+					get: vi
+						.fn()
+						.mockRejectedValue(new Error("Extension context invalidated")),
+					set: vi
+						.fn()
+						.mockRejectedValue(new Error("Extension context invalidated")),
+				},
+			},
+		};
+		const config = await getConfig();
+		expect(config).toEqual(DEFAULT_CONFIG);
+	});
+
 	it("saves and retrieves updated config", async () => {
 		await saveConfig({ selectedVoice: "Zoey" });
 		const config = await getConfig();

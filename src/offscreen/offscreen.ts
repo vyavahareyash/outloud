@@ -34,7 +34,7 @@ chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
 			p.play(message.text, message.voice);
 		});
 	} else if (message.type === "CANCEL_PLAYBACK") {
-		if (player && currentSessionId === message.sessionId) {
+		if (player) {
 			player.cancel();
 			currentSessionId = null;
 		}

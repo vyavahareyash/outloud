@@ -26,49 +26,52 @@ async function init() {
 	});
 
 	pill.onStop(() => {
-		if (!currentSessionId) return;
-
 		chrome.runtime.sendMessage<ExtensionMessage>({
 			type: "STOP_PLAYBACK",
-			sessionId: currentSessionId,
+			sessionId: currentSessionId || "",
 		});
 
+		currentSessionId = null;
 		pill?.setState("IDLE");
 	});
 
 	const checkSelection = async () => {
-		const selection = window.getSelection();
-		if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
-			pill?.hide();
-			return;
+		try {
+			const selection = window.getSelection();
+			if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+				pill?.hide();
+				return;
+			}
+
+			const anchorNode = selection.anchorNode;
+			if (
+				isEditableElement(anchorNode) ||
+				isEditableElement(document.activeElement)
+			) {
+				pill?.hide();
+				return;
+			}
+
+			const text = selection.toString();
+			if (!isValidSelection(text)) {
+				pill?.hide();
+				return;
+			}
+
+			activeSelectedText = text;
+			const range = selection.getRangeAt(0);
+			const rect = range.getBoundingClientRect();
+
+			if (rect.width === 0 && rect.height === 0) {
+				pill?.hide();
+				return;
+			}
+
+			const latestConfig = await getConfig();
+			pill?.show(rect, latestConfig.selectedVoice);
+		} catch (err) {
+			console.warn("[OutLoud:CS] checkSelection caught error:", err);
 		}
-
-		const anchorNode = selection.anchorNode;
-		if (
-			isEditableElement(anchorNode) ||
-			isEditableElement(document.activeElement)
-		) {
-			pill?.hide();
-			return;
-		}
-
-		const text = selection.toString();
-		if (!isValidSelection(text)) {
-			pill?.hide();
-			return;
-		}
-
-		activeSelectedText = text;
-		const range = selection.getRangeAt(0);
-		const rect = range.getBoundingClientRect();
-
-		if (rect.width === 0 && rect.height === 0) {
-			pill?.hide();
-			return;
-		}
-
-		const latestConfig = await getConfig();
-		pill?.show(rect, latestConfig.selectedVoice);
 	};
 
 	document.addEventListener("selectionchange", () => {

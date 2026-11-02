@@ -8,19 +8,23 @@ export interface DaemonHealth {
 }
 
 export async function getConfig(): Promise<ExtensionConfig> {
-	if (typeof chrome !== "undefined" && chrome.storage?.sync) {
-		const data = await chrome.storage.sync.get([
-			"ollamaHost",
-			"modelName",
-			"selectedVoice",
-		]);
-		return {
-			ollamaHost: (data.ollamaHost as string) || DEFAULT_CONFIG.ollamaHost,
-			modelName: (data.modelName as string) || DEFAULT_CONFIG.modelName,
-			selectedVoice:
-				(data.selectedVoice as ExtensionConfig["selectedVoice"]) ||
-				DEFAULT_CONFIG.selectedVoice,
-		};
+	try {
+		if (typeof chrome !== "undefined" && chrome.storage?.sync) {
+			const data = await chrome.storage.sync.get([
+				"ollamaHost",
+				"modelName",
+				"selectedVoice",
+			]);
+			return {
+				ollamaHost: (data?.ollamaHost as string) || DEFAULT_CONFIG.ollamaHost,
+				modelName: (data?.modelName as string) || DEFAULT_CONFIG.modelName,
+				selectedVoice:
+					(data?.selectedVoice as ExtensionConfig["selectedVoice"]) ||
+					DEFAULT_CONFIG.selectedVoice,
+			};
+		}
+	} catch {
+		// Fallback to default config on storage error or context invalidation
 	}
 	return { ...DEFAULT_CONFIG };
 }
@@ -28,8 +32,12 @@ export async function getConfig(): Promise<ExtensionConfig> {
 export async function saveConfig(
 	partial: Partial<ExtensionConfig>,
 ): Promise<void> {
-	if (typeof chrome !== "undefined" && chrome.storage?.sync) {
-		await chrome.storage.sync.set(partial);
+	try {
+		if (typeof chrome !== "undefined" && chrome.storage?.sync) {
+			await chrome.storage.sync.set(partial);
+		}
+	} catch {
+		// Suppress write failure if storage is unavailable
 	}
 }
 
