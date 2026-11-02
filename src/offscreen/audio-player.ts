@@ -130,7 +130,19 @@ export class AudioPlayer {
 		});
 
 		if (!response.ok) {
-			throw new Error(`Ollama speech request failed: HTTP ${response.status}`);
+			const rawText = await response.text().catch(() => "");
+			let detail = rawText.trim();
+			try {
+				const parsed = JSON.parse(rawText) as {
+					error?: string;
+					message?: string;
+				};
+				detail = parsed.error || parsed.message || detail;
+			} catch {
+				// Non-JSON response, retain raw text
+			}
+			const suffix = detail ? ` - ${detail}` : "";
+			throw new Error(`HTTP ${response.status}${suffix}`);
 		}
 
 		const arrayBuffer = await response.arrayBuffer();

@@ -72,4 +72,24 @@ describe("AudioPlayer", () => {
 		expect(player.getState()).toBe("ERROR");
 		expect(capturedError).toContain("Connection refused");
 	});
+
+	it("transitions to ERROR state with parsed HTTP status and body message", async () => {
+		mockFetch.mockResolvedValueOnce({
+			ok: false,
+			status: 404,
+			text: async () => JSON.stringify({ error: "model 'phonon' not found" }),
+		});
+		let capturedError: string | undefined;
+
+		player.onStatusChange((status) => {
+			if (status.state === "ERROR") {
+				capturedError = status.errorMessage;
+			}
+		});
+
+		await player.play("Test sentence.", "default");
+
+		expect(player.getState()).toBe("ERROR");
+		expect(capturedError).toBe("HTTP 404 - model 'phonon' not found");
+	});
 });

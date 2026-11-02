@@ -78,6 +78,7 @@ export class FloatingPill {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        cursor: help;
       }
     `;
 
@@ -128,6 +129,7 @@ export class FloatingPill {
 	show(rect: DOMRect, voice = "default"): void {
 		this.voiceBadge.textContent = voice;
 		this.statusText.textContent = "";
+		this.statusText.title = "";
 
 		const scrollX = window.scrollX || document.documentElement.scrollLeft;
 		const scrollY = window.scrollY || document.documentElement.scrollTop;
@@ -150,6 +152,7 @@ export class FloatingPill {
 		if (this.currentState === "IDLE" || this.currentState === "ERROR") {
 			this.host.style.display = "none";
 			this.statusText.textContent = "";
+			this.statusText.title = "";
 		}
 	}
 
@@ -160,10 +163,12 @@ export class FloatingPill {
 			this.playBtn.className = "btn stop";
 			this.playBtn.textContent = "⏳ Buffering...";
 			this.statusText.textContent = "";
+			this.statusText.title = "";
 		} else if (state === "PLAYING") {
 			this.playBtn.className = "btn stop";
 			this.playBtn.textContent = "■ Stop";
 			this.statusText.textContent = "";
+			this.statusText.title = "";
 		} else if (state === "ERROR") {
 			this.playBtn.className = "btn";
 			this.playBtn.textContent = "▶ Read";
@@ -173,6 +178,7 @@ export class FloatingPill {
 			this.playBtn.className = "btn";
 			this.playBtn.textContent = "▶ Read";
 			this.statusText.textContent = "";
+			this.statusText.title = "";
 		}
 	}
 
