@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>OutLoud Settings</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title-group">
+        <h1>OutLoud</h1>
+        <span class="version">v0.1.0</span>
+      </div>
+      <div id="status-indicator" class="status-dot offline" title="Checking status..."></div>
+    </div>
+
+    <form id="settings-form">
+      <div class="form-group">
+        <label for="ollama-host">Ollama Server Host</label>
+        <input type="url" id="ollama-host" placeholder="http://localhost:11434" required>
+      </div>
+
+      <div class="form-group">
+        <label for="model-name">Model Identifier</label>
+        <input type="text" id="model-name" placeholder="phonon" required>
+      </div>
+
+      <div class="form-group">
+        <label for="voice-select">Speech Voice</label>
+        <select id="voice-select">
+          <option value="default">Default</option>
+          <option value="Zoey">Zoey</option>
+          <option value="Easton">Easton</option>
+          <option value="Freya">Freya</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" id="save-btn" class="btn primary">Save Settings</button>
+        <button type="button" id="check-btn" class="btn secondary">Test Connection</button>
+      </div>
+    </form>
+
+    <div id="status-card" class="status-card">
+      <div id="status-message" class="status-message">Checking local Ollama connection...</div>
+    </div>
+
+    <div class="footer">
+      <p class="hint">Ensure Ollama is running with <code>OLLAMA_ORIGINS="*" ollama serve</code>.</p>
+    </div>
+  </div>
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

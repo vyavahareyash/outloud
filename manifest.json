@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "OutLoud - Local Phonon TTS",
+  "version": "0.1.0",
+  "description": "Highlight webpage text to read aloud using local Ollama Phonon speech synthesis",
+  "permissions": [
+    "offscreen",
+    "storage"
+  ],
+  "host_permissions": [
+    "http://localhost:11434/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html"
+  }
+}
