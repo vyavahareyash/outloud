@@ -24,7 +24,10 @@ export class AudioPlayer {
 		this.config = config;
 		const AudioCtx =
 			globalThis.AudioContext ||
-			(window as unknown as { AudioContext: typeof AudioContext }).AudioContext;
+			(typeof window !== "undefined" ? window.AudioContext : undefined);
+		if (!AudioCtx) {
+			throw new Error("AudioContext not supported");
+		}
 		this.audioContext = new AudioCtx();
 	}
 
