@@ -15,9 +15,13 @@ async function getOrCreatePlayer(): Promise<AudioPlayer> {
 
 		player.onStatusChange((status) => {
 			if (currentSessionId) {
+				const sid = currentSessionId;
+				if (status.state === "IDLE" || status.state === "ERROR") {
+					currentSessionId = null;
+				}
 				chrome.runtime.sendMessage<ExtensionMessage>({
 					type: "PLAYBACK_STATUS_UPDATE",
-					sessionId: currentSessionId,
+					sessionId: sid,
 					state: status.state,
 					errorMessage: status.errorMessage,
 				});
@@ -30,7 +34,11 @@ async function getOrCreatePlayer(): Promise<AudioPlayer> {
 chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
 	if (message.type === "SYNTHESIZE_AND_PLAY") {
 		currentSessionId = message.sessionId;
-		getOrCreatePlayer().then((p) => {
+		Promise.all([getOrCreatePlayer(), getConfig()]).then(([p, config]) => {
+			p.updateConfig({
+				ollamaHost: config.ollamaHost,
+				modelName: config.modelName,
+			});
 			p.play(message.text, message.voice);
 		});
 	} else if (message.type === "CANCEL_PLAYBACK") {

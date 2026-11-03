@@ -115,4 +115,40 @@ describe("AudioPlayer", () => {
 		expect(player.getState()).toBe("ERROR");
 		expect(capturedError).toBe("HTTP 400 - unsupported format");
 	});
+
+	it("does not let previous aborted play call corrupt subsequent play call with ERROR", async () => {
+		let resolveCall1: ((val: unknown) => void) | undefined;
+		mockFetch.mockImplementationOnce(
+			() =>
+				new Promise((resolve) => {
+					resolveCall1 = resolve;
+				}),
+		);
+
+		const p1 = player.play("First slow sentence.", "default");
+		const p2 = player.play("Second fast sentence.", "default");
+
+		resolveCall1?.({
+			ok: true,
+			arrayBuffer: async () => new ArrayBuffer(1024),
+		});
+
+		await Promise.all([p1, p2]);
+		expect(player.getState()).not.toBe("ERROR");
+	});
+
+	it("updates player config and normalizes trailing slashes", async () => {
+		player.updateConfig({
+			ollamaHost: "http://localhost:11434///",
+			modelName: "custom-model",
+		});
+
+		await player.play("Testing custom config.", "default");
+		expect(mockFetch).toHaveBeenCalledWith(
+			"http://localhost:11434/v1/audio/speech",
+			expect.objectContaining({
+				body: expect.stringContaining('"model":"custom-model"'),
+			}),
+		);
+	});
 });

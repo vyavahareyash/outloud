@@ -2,28 +2,28 @@
  * Helper to identify whether a target DOM element is an editable input or container.
  */
 export function isEditableElement(target: Node | null): boolean {
-	if (!target || !(target instanceof Object)) {
+	if (!target) {
 		return false;
 	}
 
-	const el = target as HTMLElement;
-	const tagName = el.tagName?.toUpperCase();
-
-	if (tagName === "INPUT" || tagName === "TEXTAREA") {
-		return true;
+	const el =
+		target.nodeType === 3
+			? (target.parentElement as HTMLElement | null)
+			: (target as HTMLElement);
+	if (!el) {
+		return false;
 	}
 
-	if (el.isContentEditable) {
+	const tagName = el.tagName?.toUpperCase();
+	if (tagName === "INPUT" || tagName === "TEXTAREA" || el.isContentEditable) {
 		return true;
 	}
 
 	if (typeof el.getAttribute === "function") {
-		if (el.getAttribute("contenteditable") === "true") {
-			return true;
-		}
-		if (el.getAttribute("role") === "textbox") {
-			return true;
-		}
+		return (
+			el.getAttribute("contenteditable") === "true" ||
+			el.getAttribute("role") === "textbox"
+		);
 	}
 
 	return false;

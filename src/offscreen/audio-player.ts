@@ -54,6 +54,10 @@ export class AudioPlayer {
 		}
 	}
 
+	updateConfig(config: AudioPlayerConfig): void {
+		this.config = config;
+	}
+
 	async play(text: string, voice = "default"): Promise<void> {
 		this.stopActivePlayback();
 
@@ -67,13 +71,14 @@ export class AudioPlayer {
 			await this.audioContext.resume();
 		}
 
-		this.abortController = new AbortController();
+		const controller = new AbortController();
+		this.abortController = controller;
 		this.nextScheduledTime = this.audioContext.currentTime;
 		this.updateState("BUFFERING");
 
 		try {
 			for (let i = 0; i < sentences.length; i++) {
-				if (this.abortController.signal.aborted) {
+				if (controller.signal.aborted) {
 					break;
 				}
 
@@ -81,10 +86,10 @@ export class AudioPlayer {
 				const audioBuffer = await this.fetchAndDecodeChunk(
 					sentence,
 					voice,
-					this.abortController.signal,
+					controller.signal,
 				);
 
-				if (this.abortController.signal.aborted) {
+				if (controller.signal.aborted) {
 					break;
 				}
 
@@ -94,7 +99,7 @@ export class AudioPlayer {
 				}
 			}
 		} catch (err: unknown) {
-			if (this.abortController?.signal.aborted) {
+			if (controller.signal.aborted) {
 				return;
 			}
 			const message = err instanceof Error ? err.message : String(err);
@@ -109,7 +114,7 @@ export class AudioPlayer {
 		userSignal: AbortSignal,
 	): Promise<AudioBuffer> {
 		const timeoutSignal = AbortSignal.timeout
-			? AbortSignal.timeout(15000)
+			? AbortSignal.timeout(60000)
 			: new AbortController().signal;
 		const combinedSignal = AbortSignal.any
 			? AbortSignal.any([userSignal, timeoutSignal])
@@ -124,7 +129,8 @@ export class AudioPlayer {
 			body.voice = voice;
 		}
 
-		const response = await fetch(`${this.config.ollamaHost}/v1/audio/speech`, {
+		const cleanHost = this.config.ollamaHost.replace(/\/+$/, "");
+		const response = await fetch(`${cleanHost}/v1/audio/speech`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(body),

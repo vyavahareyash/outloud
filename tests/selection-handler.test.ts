@@ -26,10 +26,16 @@ describe("SelectionHandler", () => {
 			getAttribute: () => null,
 		} as unknown as Node;
 
+		const textNodeInEditable = {
+			nodeType: 3,
+			parentElement: editableEl,
+		} as unknown as Node;
+
 		expect(isEditableElement(inputEl)).toBe(true);
 		expect(isEditableElement(textareaEl)).toBe(true);
 		expect(isEditableElement(editableEl)).toBe(true);
 		expect(isEditableElement(roleTextboxEl)).toBe(true);
+		expect(isEditableElement(textNodeInEditable)).toBe(true);
 		expect(isEditableElement(standardEl)).toBe(false);
 	});
 

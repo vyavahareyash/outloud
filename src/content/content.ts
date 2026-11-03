@@ -74,19 +74,20 @@ async function init() {
 		}
 	};
 
-	document.addEventListener("selectionchange", () => {
-		setTimeout(checkSelection, 20);
-	});
+	let selectionTimeout: ReturnType<typeof setTimeout> | null = null;
+	const scheduleCheck = () => {
+		if (selectionTimeout) clearTimeout(selectionTimeout);
+		selectionTimeout = setTimeout(checkSelection, 100);
+	};
 
-	document.addEventListener("mouseup", () => {
-		setTimeout(checkSelection, 20);
-	});
+	document.addEventListener("selectionchange", scheduleCheck);
+	document.addEventListener("mouseup", scheduleCheck);
 
 	chrome.runtime.onMessage.addListener((message: ExtensionMessage) => {
 		if (message.type === "PLAYBACK_STATUS_UPDATE") {
-			if (!currentSessionId || message.sessionId === currentSessionId) {
+			if (currentSessionId && message.sessionId === currentSessionId) {
 				pill?.setState(message.state, message.errorMessage);
-				if (message.state === "IDLE") {
+				if (message.state === "IDLE" || message.state === "ERROR") {
 					currentSessionId = null;
 				}
 			}

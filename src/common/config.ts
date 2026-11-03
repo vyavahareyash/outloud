@@ -49,7 +49,8 @@ export async function checkDaemonHealth(
 		const timeoutSignal = AbortSignal.timeout
 			? AbortSignal.timeout(5000)
 			: new AbortController().signal;
-		const response = await fetch(`${host}/api/tags`, {
+		const cleanHost = host.replace(/\/+$/, "");
+		const response = await fetch(`${cleanHost}/api/tags`, {
 			method: "GET",
 			signal: timeoutSignal,
 		});

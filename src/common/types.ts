@@ -37,12 +37,4 @@ export type ExtensionMessage =
 			sessionId: string;
 			state: PlaybackState;
 			errorMessage?: string;
-	  }
-	| { type: "CHECK_DAEMON_HEALTH" }
-	| {
-			type: "DAEMON_HEALTH_STATUS";
-			isOnline: boolean;
-			hasModel: boolean;
-			corsValid: boolean;
-			errorMessage?: string;
 	  };

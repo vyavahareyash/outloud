@@ -1,16 +1,37 @@
-import { checkDaemonHealth, getConfig } from "../common/config.js";
 import type { ExtensionMessage } from "../common/types.js";
 
 let teardownTimeoutId: NodeJS.Timeout | null = null;
+let creatingDoc: Promise<void> | null = null;
+let activeTabId: number | null = null;
 
 async function ensureOffscreenDocument(): Promise<void> {
-	const hasDoc = await chrome.offscreen.hasDocument();
-	if (!hasDoc) {
-		await chrome.offscreen.createDocument({
-			url: "offscreen/offscreen.html",
-			reasons: [chrome.offscreen.Reason.AUDIO_PLAYBACK],
-			justification: "Synthesize and play speech via Web Audio API",
-		});
+	if (await chrome.offscreen.hasDocument()) return;
+	if (!creatingDoc) {
+		creatingDoc = chrome.offscreen
+			.createDocument({
+				url: "offscreen/offscreen.html",
+				reasons: [chrome.offscreen.Reason.AUDIO_PLAYBACK],
+				justification: "Synthesize and play speech via Web Audio API",
+			})
+			.finally(() => {
+				creatingDoc = null;
+			});
+	}
+	await creatingDoc;
+}
+
+async function sendToOffscreen(
+	message: ExtensionMessage,
+	retries = 5,
+): Promise<void> {
+	await ensureOffscreenDocument();
+	for (let i = 0; i < retries; i++) {
+		try {
+			await chrome.runtime.sendMessage(message);
+			return;
+		} catch {
+			await new Promise((r) => setTimeout(r, 60));
+		}
 	}
 }
 
@@ -28,24 +49,19 @@ function scheduleTeardown(): void {
 }
 
 chrome.runtime.onMessage.addListener(
-	(
-		message: ExtensionMessage,
-		_sender: chrome.runtime.MessageSender,
-		sendResponse: (response?: unknown) => void,
-	) => {
+	(message: ExtensionMessage, sender: chrome.runtime.MessageSender) => {
 		if (message.type === "START_PLAYBACK") {
 			if (teardownTimeoutId) {
 				clearTimeout(teardownTimeoutId);
 				teardownTimeoutId = null;
 			}
+			activeTabId = sender.tab?.id ?? null;
 
-			ensureOffscreenDocument().then(() => {
-				chrome.runtime.sendMessage<ExtensionMessage>({
-					type: "SYNTHESIZE_AND_PLAY",
-					sessionId: message.sessionId,
-					text: message.text,
-					voice: message.voice || "default",
-				});
+			sendToOffscreen({
+				type: "SYNTHESIZE_AND_PLAY",
+				sessionId: message.sessionId,
+				text: message.text,
+				voice: message.voice || "default",
 			});
 			return false;
 		}
@@ -60,36 +76,23 @@ chrome.runtime.onMessage.addListener(
 		}
 
 		if (message.type === "PLAYBACK_STATUS_UPDATE") {
-			// Broadcast to content scripts across all active tabs
-			chrome.tabs.query({}, (tabs) => {
-				for (const tab of tabs) {
-					if (tab.id) {
-						chrome.tabs.sendMessage(tab.id, message).catch(() => {
-							// Ignore tabs without content script loaded
-						});
+			if (activeTabId) {
+				chrome.tabs.sendMessage(activeTabId, message).catch(() => {});
+			} else {
+				chrome.tabs.query({}, (tabs) => {
+					for (const tab of tabs) {
+						if (tab.id) {
+							chrome.tabs.sendMessage(tab.id, message).catch(() => {});
+						}
 					}
-				}
-			});
+				});
+			}
 
 			if (message.state === "IDLE" || message.state === "ERROR") {
+				activeTabId = null;
 				scheduleTeardown();
 			}
 			return false;
-		}
-
-		if (message.type === "CHECK_DAEMON_HEALTH") {
-			getConfig().then((cfg) => {
-				checkDaemonHealth(cfg.ollamaHost, cfg.modelName).then((health) => {
-					sendResponse({
-						type: "DAEMON_HEALTH_STATUS",
-						isOnline: health.isOnline,
-						hasModel: health.hasModel,
-						corsValid: health.corsValid,
-						errorMessage: health.errorMessage,
-					});
-				});
-			});
-			return true; // Keep channel open for async response
 		}
 	},
 );
