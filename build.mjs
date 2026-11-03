@@ -3,8 +3,10 @@ import * as path from "node:path";
 import * as esbuild from "esbuild";
 
 const isWatch = process.argv.includes("--watch");
+const isProd = process.argv.includes("--prod");
 
 async function build() {
+	fs.rmSync("dist", { recursive: true, force: true });
 	fs.mkdirSync("dist/content", { recursive: true });
 	fs.mkdirSync("dist/background", { recursive: true });
 	fs.mkdirSync("dist/offscreen", { recursive: true });
@@ -22,8 +24,8 @@ async function build() {
 		outdir: "dist",
 		format: "esm",
 		target: "es2022",
-		sourcemap: true,
-		minify: false,
+		sourcemap: !isProd,
+		minify: isProd,
 	};
 
 	if (isWatch) {

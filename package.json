@@ -5,11 +5,13 @@
 	"type": "module",
 	"scripts": {
 		"build": "node build.mjs",
+		"build:prod": "node build.mjs --prod",
+		"pack": "node build.mjs --prod && node scripts/pack.mjs",
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"type-check": "tsc --noEmit",
-		"lint": "biome check src tests",
-		"format": "biome format --write src tests",
+		"lint": "biome check src tests scripts",
+		"format": "biome format --write src tests scripts",
 		"prepare": "husky"
 	},
 	"devDependencies": {
