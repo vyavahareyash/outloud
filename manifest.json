@@ -1,26 +1,33 @@
 {
-  "manifest_version": 3,
-  "name": "OutLoud - Local Phonon TTS",
-  "version": "0.1.0",
-  "description": "Highlight webpage text to read aloud using local Ollama Phonon speech synthesis",
-  "permissions": [
-    "offscreen",
-    "storage"
-  ],
-  "host_permissions": [
-    "http://localhost:11434/*"
-  ],
-  "background": {
-    "service_worker": "background/service-worker.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content/content.js"],
-      "run_at": "document_idle"
-    }
-  ],
-  "action": {
-    "default_popup": "popup/popup.html"
-  }
+	"manifest_version": 3,
+	"name": "OutLoud - Local Phonon TTS",
+	"version": "0.1.0",
+	"description": "Highlight webpage text to read aloud using local Ollama Phonon speech synthesis",
+	"icons": {
+		"16": "icons/icon-16.png",
+		"32": "icons/icon-32.png",
+		"48": "icons/icon-48.png",
+		"128": "icons/icon-128.png"
+	},
+	"permissions": ["offscreen", "storage"],
+	"host_permissions": ["http://localhost:11434/*"],
+	"background": {
+		"service_worker": "background/service-worker.js"
+	},
+	"content_scripts": [
+		{
+			"matches": ["<all_urls>"],
+			"js": ["content/content.js"],
+			"run_at": "document_idle"
+		}
+	],
+	"action": {
+		"default_popup": "popup/popup.html",
+		"default_icon": {
+			"16": "icons/icon-16.png",
+			"32": "icons/icon-32.png",
+			"48": "icons/icon-48.png",
+			"128": "icons/icon-128.png"
+		}
+	}
 }
