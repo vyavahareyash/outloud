@@ -1,5 +1,7 @@
 # Chrome Web Store Listing & Submission Guide
 
+- **Published URL:** [Chrome Web Store Listing](https://chromewebstore.google.com/detail/ccbgbiimgikekfeeacgimhhbdchlfmpn)
+
 Use this reference to copy and paste metadata directly into the Chrome Web Store Developer Dashboard.
 
 ---
@@ -7,6 +9,8 @@ Use this reference to copy and paste metadata directly into the Chrome Web Store
 ## Store Metadata
 
 - **Name:** OutLoud - Local Phonon TTS
+- **Published Extension ID:** `ccbgbiimgikekfeeacgimhhbdchlfmpn`
+- **Store URL:** `https://chromewebstore.google.com/detail/ccbgbiimgikekfeeacgimhhbdchlfmpn`
 - **Summary (Short Description, max 132 chars):**
   `Highlight webpage text to read aloud using local Ollama Phonon speech synthesis. 100% private, runs entirely on-device.`
   *(120 / 132 characters)*
@@ -60,7 +64,7 @@ No cloud subscriptions. No telemetry. 100% on-device speech synthesis.
 
 ### Data Usage Declarations
 - **Does your product collect or transmit user data?** Select **No** (all inference and storage is local).
-- **Privacy Policy URL:** Enter your public repo raw link (e.g. `https://github.com/<user>/outloud/blob/main/PRIVACY.md`).
+- **Privacy Policy URL:** `https://github.com/vyavahareyash/outloud/blob/main/PRIVACY.md`
 
 ---
 

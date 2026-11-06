@@ -2,6 +2,7 @@
 	"name": "outloud",
 	"version": "0.1.0",
 	"description": "Chrome extension to highlight text and read it aloud using local Ollama Phonon model",
+	"homepage": "https://chromewebstore.google.com/detail/ccbgbiimgikekfeeacgimhhbdchlfmpn",
 	"type": "module",
 	"scripts": {
 		"build": "node build.mjs",

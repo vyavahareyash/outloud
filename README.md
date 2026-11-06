@@ -1,6 +1,10 @@
 # OutLoud: Local Phonon Text-to-Speech Chrome Extension
 
+[![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-OutLoud-4285F4?logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/ccbgbiimgikekfeeacgimhhbdchlfmpn)
+
 OutLoud is a Manifest V3 Chrome extension that allows you to highlight text on any webpage and read it aloud using the local [Phonon](https://ollama.com/library/phonon) neural speech synthesis model running on Ollama.
+
+[👉 **Install from the Chrome Web Store**](https://chromewebstore.google.com/detail/ccbgbiimgikekfeeacgimhhbdchlfmpn)
 
 ## Features
 
@@ -52,7 +56,13 @@ OutLoud is a Manifest V3 Chrome extension that allows you to highlight text on a
 
 ---
 
-## Loading into Chrome
+## Installation
+
+### Option 1: Chrome Web Store (Recommended)
+
+Install directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/ccbgbiimgikekfeeacgimhhbdchlfmpn).
+
+### Option 2: Load Unpacked (Development)
 
 1. Open Google Chrome and navigate to `chrome://extensions/`.
 2. Enable **Developer mode** (toggle in top right).
